@@ -13,6 +13,7 @@ app.use(cors());
 app.use(express.json());
 app.use('/v1', routes);
 app.get('/compare', (req, res) => res.sendFile(path.join(__dirname, 'ruley-compare.html')));
+app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'ruley-chat.html')));
 
 async function start() {
   await initDb();

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ruley — Ask a Pickleball Question</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f0f0f; color: #e8e8e8; height: 100vh; display: flex; flex-direction: column; }
+
+  header { padding: 20px 24px; border-bottom: 1px solid #1e1e1e; display: flex; align-items: center; gap: 12px; }
+  header .logo { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
+  header .tagline { font-size: 13px; color: #555; }
+
+  .messages { flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 20px; }
+
+  .welcome { text-align: center; margin: auto; max-width: 480px; padding: 40px 0; }
+  .welcome h2 { font-size: 24px; font-weight: 700; color: #fff; margin-bottom: 10px; }
+  .welcome p { font-size: 15px; color: #666; line-height: 1.6; }
+  .welcome .examples { margin-top: 24px; display: flex; flex-direction: column; gap: 8px; }
+  .example-btn { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 10px; padding: 12px 16px; font-size: 13px; color: #aaa; cursor: pointer; text-align: left; transition: all 0.15s; }
+  .example-btn:hover { background: #222; color: #fff; border-color: #3a3a3a; }
+
+  .message { display: flex; flex-direction: column; gap: 4px; max-width: 720px; }
+  .message.user { align-self: flex-end; align-items: flex-end; }
+  .message.assistant { align-self: flex-start; align-items: flex-start; }
+
+  .bubble { padding: 14px 18px; border-radius: 16px; font-size: 15px; line-height: 1.6; }
+  .message.user .bubble { background: #6366f1; color: #fff; border-bottom-right-radius: 4px; }
+  .message.assistant .bubble { background: #1a1a1a; color: #e8e8e8; border-bottom-left-radius: 4px; border: 1px solid #2a2a2a; }
+
+  .bubble strong { color: #fff; }
+  .bubble ul, .bubble ol { padding-left: 20px; margin: 8px 0; }
+  .bubble li { margin-bottom: 4px; }
+
+  .meta { font-size: 11px; color: #444; padding: 0 4px; }
+
+  .thinking { display: flex; gap: 5px; align-items: center; padding: 14px 18px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 16px; border-bottom-left-radius: 4px; }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: #444; animation: bounce 1.2s infinite; }
+  .dot:nth-child(2) { animation-delay: 0.2s; }
+  .dot:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-6px); background: #6366f1; } }
+
+  .input-area { padding: 16px 24px 24px; border-top: 1px solid #1e1e1e; }
+  .input-row { display: flex; gap: 10px; max-width: 720px; margin: 0 auto; }
+  textarea { flex: 1; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 12px; padding: 14px 16px; font-size: 15px; color: #e8e8e8; resize: none; outline: none; font-family: inherit; line-height: 1.5; transition: border-color 0.15s; min-height: 52px; max-height: 160px; }
+  textarea::placeholder { color: #444; }
+  textarea:focus { border-color: #6366f1; }
+  button#send { background: #6366f1; border: none; border-radius: 12px; width: 52px; height: 52px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.15s; }
+  button#send:hover { background: #4f52d6; }
+  button#send:disabled { background: #2a2a2a; cursor: not-allowed; }
+  button#send svg { color: #fff; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Ruley</div>
+  <div class="tagline">Pickleball rules, answered instantly</div>
+</header>
+
+<div class="messages" id="messages">
+  <div class="welcome" id="welcome">
+    <h2>Ask any pickleball question</h2>
+    <p>Official rules, edge cases, referee calls — Ruley knows the 2026 USAP rulebook inside and out.</p>
+    <div class="examples">
+      <button class="example-btn" onclick="ask(this.textContent)">Can you volley the ball before it bounces on a serve return?</button>
+      <button class="example-btn" onclick="ask(this.textContent)">What happens if the ball hits the net post and goes over?</button>
+      <button class="example-btn" onclick="ask(this.textContent)">Is it a fault if my paddle crosses the kitchen line during a volley?</button>
+      <button class="example-btn" onclick="ask(this.textContent)">Can I switch hands mid-rally?</button>
+    </div>
+  </div>
+</div>
+
+<div class="input-area">
+  <div class="input-row">
+    <textarea id="input" placeholder="Ask a pickleball question..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+    <button id="send" onclick="send()">
+
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="22" y1="2" x2="11" y2="13"></line>
+        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+      </svg>
+    </button>
+  </div>
+  <div style="max-width:720px;margin:12px auto 0;font-size:12px;color:#3a3a3a;line-height:1.6;text-align:center;">
+    Answers are generated from the <strong style="color:#4a4a4a">2026 USAP Official Rulebook</strong>, the <strong style="color:#4a4a4a">Referee Casebook</strong>, the <strong style="color:#4a4a4a">USAP New Rules Database</strong>, and the <strong style="color:#4a4a4a">Annual Change Document</strong> — ingested daily. Powered by Gemini with Claude as fallback.
+  </div>
+</div>
+
+<script>
+  let busy = false;
+
+  function autoResize(el) {
+    el.style.height = 'auto';
+    el.style.height = Math.min(el.scrollHeight, 160) + 'px';
+  }
+
+  function handleKey(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      send();
+    }
+  }
+
+  function ask(text) {
+    document.getElementById('input').value = text;
+    send();
+  }
+
+  function addMessage(role, html) {
+    const wrap = document.getElementById('messages');
+    const welcome = document.getElementById('welcome');
+    if (welcome) welcome.remove();
+
+    const div = document.createElement('div');
+    div.className = `message ${role}`;
+    div.innerHTML = `<div class="bubble">${html}</div>`;
+    wrap.appendChild(div);
+    wrap.scrollTop = wrap.scrollHeight;
+    return div;
+  }
+
+  function addThinking() {
+    const wrap = document.getElementById('messages');
+    const welcome = document.getElementById('welcome');
+    if (welcome) welcome.remove();
+
+    const div = document.createElement('div');
+    div.className = 'message assistant';
+    div.innerHTML = `<div class="thinking"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
+    wrap.appendChild(div);
+    wrap.scrollTop = wrap.scrollHeight;
+    return div;
+  }
+
+  function formatAnswer(data) {
+    if (data.error) return `<em style="color:#f87171">${data.error}</em>`;
+    let html = '';
+    if (data.answer) html += escapeHtml(data.answer).replace(/\n/g, '<br>');
+    if (data.rule_reference) html += `<br><br><span style="font-size:12px;color:#555">Rule: ${escapeHtml(data.rule_reference)}</span>`;
+    return html;
+  }
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;');
+  }
+
+  async function send() {
+    if (busy) return;
+    const input = document.getElementById('input');
+    const question = input.value.trim();
+    if (!question) return;
+
+    busy = true;
+    document.getElementById('send').disabled = true;
+    input.value = '';
+    input.style.height = 'auto';
+
+    addMessage('user', escapeHtml(question));
+    const thinking = addThinking();
+
+    try {
+      const res = await fetch('/v1/query', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ question })
+      });
+      const data = await res.json();
+      thinking.remove();
+      addMessage('assistant', formatAnswer(data));
+    } catch {
+      thinking.remove();
+      addMessage('assistant', '<em style="color:#f87171">Could not reach the server. Try again.</em>');
+    }
+
+    busy = false;
+    document.getElementById('send').disabled = false;
+    input.focus();
+  }
+</script>
+</body>
+</html>
