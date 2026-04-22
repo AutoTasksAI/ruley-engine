@@ -1,0 +1,22 @@
+{
+  "name": "ruley-engine",
+  "version": "1.0.0",
+  "description": "Pickleball rules API — most accurate rules engine in the world",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "ingest": "node -e \"require('./ingestion/scheduler.js').runNow()\""
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@google/generative-ai": "^0.21.0",
+    "sql.js": "^1.12.0",
+    "cheerio": "^1.0.0",
+    "cors": "^2.8.5",
+    "express": "^4.19.2",
+    "node-cron": "^3.0.3",
+    "pdf-parse": "^1.1.1"
+  }
+}

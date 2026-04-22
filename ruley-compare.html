@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ruley Engine vs Ruley.ai — Comparison Test</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f0f0f; color: #e8e8e8; min-height: 100vh; }
+
+  header { background: #1a1a1a; border-bottom: 1px solid #2a2a2a; padding: 20px 32px; display: flex; align-items: center; justify-content: space-between; }
+  header h1 { font-size: 20px; font-weight: 700; color: #fff; }
+  header span { font-size: 13px; color: #666; }
+
+  .scoreboard { display: flex; gap: 24px; padding: 20px 32px; background: #141414; border-bottom: 1px solid #2a2a2a; }
+  .score-card { background: #1e1e1e; border-radius: 8px; padding: 14px 20px; min-width: 120px; text-align: center; }
+  .score-card .num { font-size: 28px; font-weight: 700; }
+  .score-card .label { font-size: 11px; color: #666; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+  .score-card.engine .num { color: #22c55e; }
+  .score-card.ruley .num { color: #3b82f6; }
+  .score-card.tie .num { color: #f59e0b; }
+  .score-card.total .num { color: #a855f7; }
+
+  .layout { display: grid; grid-template-columns: 300px 1fr; min-height: calc(100vh - 130px); }
+
+  .sidebar { background: #141414; border-right: 1px solid #2a2a2a; overflow-y: auto; padding: 16px 0; }
+  .category-label { font-size: 10px; color: #555; text-transform: uppercase; letter-spacing: 1px; padding: 12px 16px 6px; }
+  .q-item { padding: 10px 16px; cursor: pointer; border-left: 3px solid transparent; font-size: 13px; line-height: 1.4; color: #aaa; transition: all 0.15s; }
+  .q-item:hover { background: #1c1c1c; color: #ddd; }
+  .q-item.active { background: #1e1e1e; border-left-color: #6366f1; color: #fff; }
+  .q-item .q-num { font-size: 10px; color: #555; margin-bottom: 3px; }
+  .q-item .badge { display: inline-block; font-size: 9px; padding: 1px 6px; border-radius: 10px; margin-top: 4px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.3px; }
+  .badge-edge { background: #7c3aed22; color: #a78bfa; border: 1px solid #7c3aed44; }
+  .badge-2026 { background: #dc262622; color: #f87171; border: 1px solid #dc262644; }
+  .badge-casebook { background: #0891b222; color: #67e8f9; border: 1px solid #0891b244; }
+  .badge-serve { background: #d9770622; color: #fb923c; border: 1px solid #d9770644; }
+  .badge-basic { background: #16a34a22; color: #4ade80; border: 1px solid #16a34a44; }
+  .badge-equip { background: #92400e22; color: #fbbf24; border: 1px solid #92400e44; }
+  .scored-win { border-left-color: #22c55e !important; }
+  .scored-lose { border-left-color: #3b82f6 !important; }
+  .scored-tie { border-left-color: #f59e0b !important; }
+  .scored-skip { border-left-color: #444 !important; }
+
+  .main { padding: 28px 32px; overflow-y: auto; }
+  .question-box { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 10px; padding: 20px 24px; margin-bottom: 24px; }
+  .question-box .q-label { font-size: 11px; color: #555; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .question-box .q-text { font-size: 17px; font-weight: 600; color: #fff; line-height: 1.4; }
+  .question-box .q-meta { font-size: 12px; color: #555; margin-top: 8px; }
+
+  .ask-btn { background: #6366f1; color: #fff; border: none; border-radius: 8px; padding: 12px 24px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.15s; }
+  .ask-btn:hover { background: #4f46e5; }
+  .ask-btn:disabled { background: #333; color: #666; cursor: not-allowed; }
+
+  .columns { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px; }
+  .col-header { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 12px; padding: 8px 12px; border-radius: 6px; }
+  .col-engine .col-header { background: #14532d33; color: #22c55e; border: 1px solid #22c55e33; }
+  .col-ruley .col-header { background: #1e3a8a33; color: #60a5fa; border: 1px solid #3b82f633; }
+
+  .result-box { background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px; padding: 16px; min-height: 200px; font-size: 13px; line-height: 1.6; }
+  .result-box.loading { color: #555; font-style: italic; }
+  .result-box.error { color: #f87171; }
+
+  .field { margin-bottom: 12px; }
+  .field-label { font-size: 10px; color: #555; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom-3px; margin-bottom: 3px; }
+  .field-value { color: #e8e8e8; }
+  .verdict { font-size: 15px; font-weight: 600; color: #fff; }
+  .rule-tag { display: inline-block; background: #6366f133; color: #a5b4fc; border: 1px solid #6366f144; border-radius: 4px; padding: 2px 8px; font-size: 12px; font-weight: 600; margin-bottom: 8px; }
+  .conf-HIGH { color: #22c55e; }
+  .conf-MEDIUM { color: #f59e0b; }
+  .conf-LOW { color: #f87171; }
+  .edge-list { list-style: none; padding: 0; }
+  .edge-list li { padding: 3px 0; color: #aaa; }
+  .edge-list li::before { content: "→ "; color: #555; }
+  .model-tag { font-size: 11px; color: #555; margin-top: 8px; }
+
+  textarea.ruley-input { width: 100%; min-height: 200px; background: #111; border: 1px solid #2a2a2a; border-radius: 8px; padding: 14px; color: #e8e8e8; font-size: 13px; line-height: 1.6; resize: vertical; font-family: inherit; }
+  textarea.ruley-input:focus { outline: none; border-color: #3b82f6; }
+  textarea.ruley-input::placeholder { color: #444; }
+
+  .scoring { margin-top: 20px; background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 10px; padding: 20px; }
+  .scoring h3 { font-size: 13px; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px; }
+  .score-btns { display: flex; gap: 10px; flex-wrap: wrap; }
+  .score-btn { padding: 10px 20px; border-radius: 8px; border: 2px solid transparent; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.15s; background: #111; }
+  .score-btn:hover { filter: brightness(1.2); }
+  .score-btn.engine-win { border-color: #22c55e; color: #22c55e; }
+  .score-btn.engine-win.selected { background: #22c55e; color: #000; }
+  .score-btn.ruley-win { border-color: #3b82f6; color: #3b82f6; }
+  .score-btn.ruley-win.selected { background: #3b82f6; color: #fff; }
+  .score-btn.tie-btn { border-color: #f59e0b; color: #f59e0b; }
+  .score-btn.tie-btn.selected { background: #f59e0b; color: #000; }
+  .score-btn.skip-btn { border-color: #444; color: #666; }
+  .score-btn.skip-btn.selected { background: #444; color: #aaa; }
+
+  .notes-area { margin-top: 12px; }
+  .notes-area textarea { width: 100%; height: 60px; background: #111; border: 1px solid #2a2a2a; border-radius: 6px; padding: 10px; color: #aaa; font-size: 12px; resize: none; font-family: inherit; }
+  .notes-area textarea:focus { outline: none; border-color: #555; }
+
+  .nav-btns { display: flex; gap: 10px; margin-top: 20px; }
+  .nav-btn { padding: 10px 20px; background: #1e1e1e; border: 1px solid #333; border-radius: 8px; color: #aaa; font-size: 13px; cursor: pointer; transition: all 0.15s; }
+  .nav-btn:hover { background: #2a2a2a; color: #fff; }
+
+  .empty-state { color: #444; font-size: 15px; text-align: center; padding: 60px 20px; }
+
+  .export-btn { padding: 8px 16px; background: #1e1e1e; border: 1px solid #333; border-radius: 6px; color: #888; font-size: 12px; cursor: pointer; }
+  .export-btn:hover { background: #2a2a2a; color: #fff; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Ruley Engine vs Ruley.ai</h1>
+  <div style="display:flex;gap:12px;align-items:center;">
+    <button class="export-btn" onclick="exportResults()">Export Results</button>
+    <span id="server-status" style="font-size:12px;color:#555;">checking server...</span>
+  </div>
+</header>
+
+<div class="scoreboard">
+  <div class="score-card engine"><div class="num" id="score-engine">0</div><div class="label">Ruley Engine Wins</div></div>
+  <div class="score-card ruley"><div class="num" id="score-ruley">0</div><div class="label">Ruley.ai Wins</div></div>
+  <div class="score-card tie"><div class="num" id="score-tie">0</div><div class="label">Ties</div></div>
+  <div class="score-card total"><div class="num" id="score-total">0</div><div class="label">Tested</div></div>
+  <div style="margin-left:auto;display:flex;align-items:center;">
+    <div style="font-size:13px;color:#555;" id="accuracy-display"></div>
+  </div>
+</div>
+
+<div class="layout">
+  <div class="sidebar" id="sidebar"></div>
+  <div class="main" id="main">
+    <div class="empty-state">Select a question from the left to begin testing.</div>
+  </div>
+</div>
+
+<script>
+const QUESTIONS = [
+  // Basic control group
+  { id: 1, cat: 'basic', label: 'Basic', text: 'What is the non-volley zone and how far does it extend from the net?' },
+  { id: 2, cat: 'basic', label: 'Basic', text: 'What happens if the ball hits the net post and lands in the correct service court?' },
+  { id: 3, cat: 'basic', label: 'Basic', text: 'Can you step into the kitchen to play a ball that has bounced?' },
+
+  // Serve rules
+  { id: 4, cat: 'serve', label: 'Serve', text: 'What is a legal drop serve and what is explicitly allowed that is not allowed in a volley serve?' },
+  { id: 5, cat: 'serve', label: 'Serve', text: 'If the server calls the wrong score before serving and then serves, what is the ruling?' },
+  { id: 6, cat: 'serve', label: 'Serve', text: 'Can the server spin the ball before dropping it for a drop serve?' },
+
+  // NVZ / Kitchen edge cases
+  { id: 7, cat: 'edge', label: 'Edge Case', text: 'A ball lands in the kitchen and spins back over the net without being touched by the opponent. Can the player reach over the net to hit it, and where must they hit it?' },
+  { id: 8, cat: 'edge', label: 'Edge Case', text: 'A player volleys the ball and their follow-through momentum carries their paddle over the net into the opponent\'s side. Is this a fault?' },
+  { id: 9, cat: 'edge', label: 'Edge Case', text: 'A player\'s hat falls off and lands in the kitchen while they are in the process of volleying. Is it a fault?' },
+  { id: 10, cat: 'edge', label: 'Edge Case', text: 'During a volley, a player\'s foot touches the kitchen line but not the kitchen itself. Is this a fault?' },
+  { id: 11, cat: 'edge', label: 'Edge Case', text: 'A player hits the ball and it clips the top of the net, goes over, and lands in bounds. The opponent does not attempt to play it. What is the ruling?' },
+  { id: 12, cat: 'edge', label: 'Edge Case', text: 'Can a player hit the ball around the net post below the net height if the ball has traveled outside the court boundary?' },
+
+  // Referee casebook scenarios
+  { id: 13, cat: 'casebook', label: 'Casebook', text: 'A player calls a fault on themselves mid-rally. Their partner disagrees. Who has authority and what happens?' },
+  { id: 14, cat: 'casebook', label: 'Casebook', text: 'The ball is in play and strikes a permanent object like a ceiling or overhead light before landing in bounds. What is the ruling?' },
+  { id: 15, cat: 'casebook', label: 'Casebook', text: 'A player is distracted by a ball rolling onto the court from an adjacent game during a rally. What can they call and when must they call it?' },
+  { id: 16, cat: 'casebook', label: 'Casebook', text: 'In doubles, one player calls the ball out but their partner calls it in. What is the ruling?' },
+  { id: 17, cat: 'casebook', label: 'Casebook', text: 'A player catches the ball thinking it was going out before it bounces. The ball was clearly going out. What is the ruling?' },
+
+  // 2026 rule changes
+  { id: 18, cat: '2026', label: '2026 Change', text: 'What specific rule changes were made for 2026 that affect how a player can serve?' },
+  { id: 19, cat: '2026', label: '2026 Change', text: 'What changed in 2026 regarding the rules for calling lets or replays?' },
+  { id: 20, cat: '2026', label: '2026 Change', text: 'Are there any 2026 rule changes that affect the two-bounce rule or how it is applied?' },
+  { id: 21, cat: '2026', label: '2026 Change', text: 'What does the 2026 rulebook say about electrical and medical timeout procedures compared to prior years?' },
+
+  // Equipment
+  { id: 22, cat: 'equip', label: 'Equipment', text: 'What makes a paddle illegal under the 2026 USAP equipment standards?' },
+  { id: 23, cat: 'equip', label: 'Equipment', text: 'Can a player use a paddle with a rough or textured surface to add spin? What are the limits?' },
+
+  // Hard edge cases
+  { id: 24, cat: 'edge', label: 'Edge Case', text: 'A player volleys from outside the kitchen but their momentum carries them into the kitchen after the ball is dead. Is it a fault?' },
+  { id: 25, cat: 'edge', label: 'Edge Case', text: 'The ball bounces in the kitchen and the player steps in to return it. After the return the player stays in the kitchen. The opponent hits a hard shot directly at that player who reflexively volleys it. Is this a fault?' },
+];
+
+const CATEGORY_ORDER = ['basic', 'serve', 'edge', 'casebook', '2026', 'equip'];
+const CATEGORY_NAMES = { basic: 'Control Group', serve: 'Serve Rules', edge: 'Edge Cases', casebook: 'Referee Casebook', '2026': '2026 Rule Changes', equip: 'Equipment' };
+
+let scores = {};
+let notes = {};
+let engineAnswers = {};
+let ruleyAnswers = {};
+let activeId = null;
+
+function catBadge(cat) {
+  return `<span class="badge badge-${cat}">${QUESTIONS.find(q=>q.cat===cat)?.label||cat}</span>`;
+}
+
+function renderSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  let html = '';
+  for (const cat of CATEGORY_ORDER) {
+    const qs = QUESTIONS.filter(q => q.cat === cat);
+    if (!qs.length) continue;
+    html += `<div class="category-label">${CATEGORY_NAMES[cat]}</div>`;
+    for (const q of qs) {
+      const s = scores[q.id];
+      const cls = s ? `scored-${s}` : '';
+      html += `<div class="q-item ${activeId===q.id?'active':''} ${cls}" onclick="selectQuestion(${q.id})">
+        <div class="q-num">Q${q.id}</div>
+        ${q.text.length > 80 ? q.text.slice(0, 80) + '…' : q.text}
+        <br>${catBadge(q.cat)}
+      </div>`;
+    }
+  }
+  sidebar.innerHTML = html;
+}
+
+function updateScoreboard() {
+  const vals = Object.values(scores);
+  const engine = vals.filter(v=>v==='win').length;
+  const ruley = vals.filter(v=>v==='lose').length;
+  const tie = vals.filter(v=>v==='tie').length;
+  const total = vals.filter(v=>v!=='skip').length;
+  document.getElementById('score-engine').textContent = engine;
+  document.getElementById('score-ruley').textContent = ruley;
+  document.getElementById('score-tie').textContent = tie;
+  document.getElementById('score-total').textContent = total;
+  if (total > 0) {
+    const pct = Math.round((engine / total) * 100);
+    document.getElementById('accuracy-display').textContent = `Engine win rate: ${pct}%`;
+  }
+}
+
+function selectQuestion(id) {
+  activeId = id;
+  renderSidebar();
+  renderMain();
+}
+
+function renderMain() {
+  const q = QUESTIONS.find(q => q.id === activeId);
+  if (!q) return;
+  const engineAnswer = engineAnswers[q.id];
+  const ruleyAnswer = ruleyAnswers[q.id] || '';
+  const currentScore = scores[q.id];
+  const currentNote = notes[q.id] || '';
+
+  document.getElementById('main').innerHTML = `
+    <div class="question-box">
+      <div class="q-label">Question ${q.id} — ${CATEGORY_NAMES[q.cat]}</div>
+      <div class="q-text">${q.text}</div>
+    </div>
+
+    <button class="ask-btn" id="ask-btn" onclick="askEngine(${q.id})">
+      ${engineAnswer ? 'Re-ask Ruley Engine' : 'Ask Ruley Engine'}
+    </button>
+
+    <div class="columns">
+      <div class="col-engine">
+        <div class="col-header">Ruley Engine</div>
+        <div class="result-box" id="engine-result">
+          ${engineAnswer ? renderEngineAnswer(engineAnswer) : '<span style="color:#555;font-style:italic;">Click "Ask Ruley Engine" to run this question.</span>'}
+        </div>
+      </div>
+      <div class="col-ruley">
+        <div class="col-header">Ruley.ai (App Store)</div>
+        <textarea class="ruley-input" id="ruley-input" placeholder="Paste the answer from the Ruley.ai app here..." onchange="saveRuleyAnswer(${q.id})">${ruleyAnswer}</textarea>
+      </div>
+    </div>
+
+    <div class="scoring">
+      <h3>Who answered better?</h3>
+      <div class="score-btns">
+        <button class="score-btn engine-win ${currentScore==='win'?'selected':''}" onclick="setScore(${q.id},'win')">Ruley Engine Won</button>
+        <button class="score-btn ruley-win ${currentScore==='lose'?'selected':''}" onclick="setScore(${q.id},'lose')">Ruley.ai Won</button>
+        <button class="score-btn tie-btn ${currentScore==='tie'?'selected':''}" onclick="setScore(${q.id},'tie')">Tie</button>
+        <button class="score-btn skip-btn ${currentScore==='skip'?'selected':''}" onclick="setScore(${q.id},'skip')">Skip</button>
+      </div>
+      <div class="notes-area">
+        <textarea id="notes-input" placeholder="Notes on this question (optional)..." onchange="saveNote(${q.id})">${currentNote}</textarea>
+      </div>
+    </div>
+
+    <div class="nav-btns">
+      ${q.id > 1 ? `<button class="nav-btn" onclick="selectQuestion(${q.id - 1})">← Previous</button>` : ''}
+      ${q.id < QUESTIONS.length ? `<button class="nav-btn" onclick="selectQuestion(${q.id + 1})">Next →</button>` : ''}
+    </div>
+  `;
+}
+
+function renderEngineAnswer(a) {
+  if (a.error) return `<span class="error">Error: ${a.error}</span>`;
+  return `
+    ${a.rule_number ? `<div class="rule-tag">${a.rule_number}</div>` : ''}
+    <div class="field"><div class="verdict">${a.verdict || '—'}</div></div>
+    ${a.explanation ? `<div class="field"><div class="field-label">Explanation</div><div class="field-value">${a.explanation}</div></div>` : ''}
+    ${a.rule_text ? `<div class="field"><div class="field-label">Rule Text</div><div class="field-value" style="color:#aaa;">${a.rule_text}</div></div>` : ''}
+    ${a.edge_cases?.length ? `<div class="field"><div class="field-label">Edge Cases</div><ul class="edge-list">${a.edge_cases.map(e=>`<li>${e}</li>`).join('')}</ul></div>` : ''}
+    ${a.notes ? `<div class="field"><div class="field-label">Referee Notes</div><div class="field-value" style="color:#aaa;">${a.notes}</div></div>` : ''}
+    ${a.confidence ? `<div class="field"><div class="field-label">Confidence</div><span class="conf-${a.confidence}">${a.confidence}</span></div>` : ''}
+    ${a.source ? `<div class="field"><div class="field-label">Source</div><div class="field-value" style="color:#666;">${a.source}${a.source_version?' ('+a.source_version+')':''}</div></div>` : ''}
+    <div class="model-tag">Model: ${a.model_used || 'unknown'}</div>
+  `;
+}
+
+async function askEngine(id) {
+  const q = QUESTIONS.find(q => q.id === id);
+  const btn = document.getElementById('ask-btn');
+  const box = document.getElementById('engine-result');
+  btn.disabled = true;
+  btn.textContent = 'Asking...';
+  box.innerHTML = '<span class="loading">Querying Ruley Engine...</span>';
+
+  try {
+    const res = await fetch('/v1/query', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ question: q.text })
+    });
+    const data = await res.json();
+    engineAnswers[id] = data;
+    box.innerHTML = renderEngineAnswer(data);
+  } catch (err) {
+    engineAnswers[id] = { error: 'Could not reach server.' };
+    box.innerHTML = `<span class="error">Could not reach server.</span>`;
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'Re-ask Ruley Engine';
+}
+
+function saveRuleyAnswer(id) {
+  ruleyAnswers[id] = document.getElementById('ruley-input').value;
+}
+
+function saveNote(id) {
+  notes[id] = document.getElementById('notes-input').value;
+}
+
+function setScore(id, val) {
+  scores[id] = val;
+  updateScoreboard();
+  renderSidebar();
+  renderMain();
+}
+
+function exportResults() {
+  let csv = 'Q#,Category,Question,Score,Engine Verdict,Engine Rule,Engine Confidence,Notes\n';
+  for (const q of QUESTIONS) {
+    const a = engineAnswers[q.id] || {};
+    const score = scores[q.id] || '';
+    const note = (notes[q.id] || '').replace(/"/g, '""');
+    const verdict = (a.verdict || '').replace(/"/g, '""');
+    csv += `${q.id},"${CATEGORY_NAMES[q.cat]}","${q.text.replace(/"/g,'""')}","${score}","${verdict}","${a.rule_number||''}","${a.confidence||''}","${note}"\n`;
+  }
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `ruley-comparison-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+}
+
+async function checkServer() {
+  try {
+    const res = await fetch('/v1/health');
+    const data = await res.json();
+    document.getElementById('server-status').textContent = 'Server online';
+    document.getElementById('server-status').style.color = '#22c55e';
+  } catch {
+    document.getElementById('server-status').textContent = 'Server offline — run npm start';
+    document.getElementById('server-status').style.color = '#f87171';
+  }
+}
+
+renderSidebar();
+checkServer();
+setInterval(checkServer, 10000);
+</script>
+</body>
+</html>
