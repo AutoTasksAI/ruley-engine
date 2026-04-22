@@ -140,8 +140,14 @@
   function formatAnswer(data) {
     if (data.error) return `<em style="color:#f87171">${data.error}</em>`;
     let html = '';
-    if (data.answer) html += escapeHtml(data.answer).replace(/\n/g, '<br>');
-    if (data.rule_reference) html += `<br><br><span style="font-size:12px;color:#555">Rule: ${escapeHtml(data.rule_reference)}</span>`;
+    if (data.verdict) html += `<strong>${escapeHtml(data.verdict)}</strong><br><br>`;
+    if (data.explanation) html += escapeHtml(data.explanation).replace(/\n/g, '<br>');
+    if (data.edge_cases && data.edge_cases.length) {
+      html += `<br><br><strong>Edge cases:</strong><ul>` + data.edge_cases.map(e => `<li>${escapeHtml(e)}</li>`).join('') + `</ul>`;
+    }
+    if (data.rule_number) html += `<br><span style="font-size:13px;color:#888">Rule: ${escapeHtml(data.rule_number)}</span>`;
+    if (data.source) html += `<span style="font-size:13px;color:#666"> — ${escapeHtml(data.source)}</span>`;
+    if (!html) html = `<em style="color:#f87171">No answer returned. The engine may still be ingesting documents.</em>`;
     return html;
   }
 
