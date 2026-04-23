@@ -147,6 +147,16 @@
     }
     if (data.rule_number) html += `<br><span style="font-size:13px;color:#888">Rule: ${escapeHtml(data.rule_number)}</span>`;
     if (data.source) html += `<span style="font-size:13px;color:#666"> — ${escapeHtml(data.source)}</span>`;
+
+    const id = 'json-' + Math.random().toString(36).slice(2);
+    html += `<br><br><span style="font-size:12px;color:#555;cursor:pointer;user-select:none;" onclick="
+      var el=document.getElementById('${id}');
+      var showing=el.style.display!=='none';
+      el.style.display=showing?'none':'block';
+      this.textContent=showing?'View raw JSON':'Hide raw JSON';
+    ">View raw JSON</span>
+    <pre id="${id}" style="display:none;margin-top:8px;background:#0a0a0a;border:1px solid #2a2a2a;border-radius:8px;padding:14px;font-size:11px;color:#888;overflow-x:auto;white-space:pre-wrap;word-break:break-all;">${escapeHtml(JSON.stringify(data, null, 2))}</pre>`;
+
     if (!html) html = `<em style="color:#f87171">No answer returned. The engine may still be ingesting documents.</em>`;
     return html;
   }
