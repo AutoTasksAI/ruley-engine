@@ -3,91 +3,414 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Ruley — Daily Updates & Edge Cases</title>
+<title>Ruley — Pickleball Rules API</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #111; color: #f0f0f0; height: 100vh; display: flex; flex-direction: column; }
 
-  header { padding: 22px 28px; border-bottom: 1px solid #2a2a2a; display: flex; align-items: center; gap: 14px; }
-  header .logo { font-size: 26px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
-  header .tagline { font-size: 15px; color: #999; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #0d0d0d;
+    color: #e8e8e8;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
 
-  .messages { flex: 1; overflow-y: auto; padding: 28px; display: flex; flex-direction: column; gap: 20px; }
+  /* HEADER */
+  header {
+    padding: 18px 28px;
+    border-bottom: 1px solid #1e1e1e;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: #0d0d0d;
+    flex-shrink: 0;
+  }
+  .logo {
+    font-size: 24px;
+    font-weight: 800;
+    color: #fff;
+    letter-spacing: -0.5px;
+  }
+  .logo span { color: #22c55e; }
+  .api-badge {
+    background: #16a34a22;
+    border: 1px solid #16a34a55;
+    color: #22c55e;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 20px;
+  }
+  .header-right {
+    margin-left: auto;
+    font-size: 13px;
+    color: #444;
+  }
 
-  .welcome { text-align: center; margin: auto; max-width: 540px; padding: 40px 0; }
-  .welcome h2 { font-size: 28px; font-weight: 700; color: #fff; margin-bottom: 12px; }
-  .welcome p { font-size: 17px; color: #bbb; line-height: 1.7; }
-  .welcome .examples { margin-top: 28px; display: flex; flex-direction: column; gap: 10px; }
-  .example-btn { background: #1e1e1e; border: 1px solid #333; border-radius: 10px; padding: 14px 18px; font-size: 15px; color: #ccc; cursor: pointer; text-align: left; transition: all 0.15s; line-height: 1.5; }
-  .example-btn:hover { background: #272727; color: #fff; border-color: #555; }
+  /* MESSAGES */
+  .messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 32px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    align-items: center;
+  }
 
-  .message { display: flex; flex-direction: column; gap: 4px; max-width: 720px; }
-  .message.user { align-self: flex-end; align-items: flex-end; }
-  .message.assistant { align-self: flex-start; align-items: flex-start; }
+  /* WELCOME */
+  .welcome {
+    text-align: center;
+    max-width: 600px;
+    width: 100%;
+    padding: 48px 0 24px;
+  }
+  .welcome h1 {
+    font-size: 32px;
+    font-weight: 800;
+    color: #fff;
+    line-height: 1.2;
+    margin-bottom: 12px;
+    letter-spacing: -0.5px;
+  }
+  .welcome p {
+    font-size: 16px;
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 32px;
+  }
+  .sources-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 36px;
+  }
+  .source-chip {
+    background: #161616;
+    border: 1px solid #2a2a2a;
+    border-radius: 20px;
+    padding: 5px 12px;
+    font-size: 12px;
+    color: #888;
+  }
+  .examples {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    text-align: left;
+  }
+  .examples-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #444;
+    margin-bottom: 4px;
+    text-align: center;
+  }
+  .example-btn {
+    background: #111;
+    border: 1px solid #252525;
+    border-radius: 12px;
+    padding: 14px 18px;
+    font-size: 14px;
+    color: #aaa;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.15s;
+    line-height: 1.5;
+    font-family: inherit;
+    width: 100%;
+  }
+  .example-btn:hover {
+    background: #161616;
+    color: #e8e8e8;
+    border-color: #333;
+  }
+  .example-btn::before {
+    content: "→ ";
+    color: #333;
+  }
 
-  .bubble { padding: 16px 20px; border-radius: 16px; font-size: 17px; line-height: 1.7; }
-  .message.user .bubble { background: #6366f1; color: #fff; border-bottom-right-radius: 4px; }
-  .message.assistant .bubble { background: #1e1e1e; color: #f0f0f0; border-bottom-left-radius: 4px; border: 1px solid #333; }
+  /* MESSAGE ROW */
+  .msg-row {
+    width: 100%;
+    max-width: 700px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .msg-row.user { align-items: flex-end; }
+  .msg-row.assistant { align-items: flex-start; }
 
-  .bubble strong { color: #fff; }
-  .bubble ul, .bubble ol { padding-left: 20px; margin: 10px 0; }
-  .bubble li { margin-bottom: 6px; }
+  /* USER BUBBLE */
+  .user-bubble {
+    background: #1d4ed8;
+    color: #fff;
+    padding: 12px 18px;
+    border-radius: 18px;
+    border-bottom-right-radius: 4px;
+    font-size: 16px;
+    line-height: 1.6;
+    max-width: 85%;
+  }
 
-  .meta { font-size: 12px; color: #555; padding: 0 4px; }
+  /* ANSWER CARD */
+  .answer-card {
+    background: #111;
+    border: 1px solid #222;
+    border-radius: 16px;
+    overflow: hidden;
+    width: 100%;
+  }
+  .answer-verdict {
+    padding: 20px 22px 16px;
+    border-bottom: 1px solid #1a1a1a;
+  }
+  .verdict-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: #444;
+    margin-bottom: 8px;
+  }
+  .verdict-text {
+    font-size: 19px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.4;
+  }
+  .answer-body {
+    padding: 18px 22px;
+    border-bottom: 1px solid #1a1a1a;
+  }
+  .explanation {
+    font-size: 15px;
+    color: #ccc;
+    line-height: 1.75;
+  }
+  .explanation br { display: block; content: ""; margin-top: 8px; }
+  .edge-cases {
+    margin-top: 16px;
+  }
+  .edge-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: #555;
+    margin-bottom: 8px;
+  }
+  .edge-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .edge-list li {
+    font-size: 13px;
+    color: #888;
+    line-height: 1.6;
+    padding-left: 16px;
+    position: relative;
+  }
+  .edge-list li::before {
+    content: "→";
+    position: absolute;
+    left: 0;
+    color: #444;
+  }
+  .answer-meta {
+    padding: 12px 22px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    background: #0d0d0d;
+  }
+  .rule-badge {
+    background: #1e1a3a;
+    border: 1px solid #3730a355;
+    color: #818cf8;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 6px;
+  }
+  .conf-badge {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+  .conf-HIGH { background: #14532d33; color: #22c55e; border: 1px solid #22c55e33; }
+  .conf-MEDIUM { background: #78350f33; color: #f59e0b; border: 1px solid #f59e0b33; }
+  .conf-LOW { background: #7f1d1d33; color: #f87171; border: 1px solid #f87171033; }
+  .source-meta {
+    font-size: 12px;
+    color: #444;
+    margin-left: auto;
+  }
 
-  .thinking { display: flex; gap: 5px; align-items: center; padding: 16px 20px; background: #1e1e1e; border: 1px solid #333; border-radius: 16px; border-bottom-left-radius: 4px; }
-  .dot { width: 8px; height: 8px; border-radius: 50%; background: #555; animation: bounce 1.2s infinite; }
+  /* JSON TOGGLE */
+  .json-toggle-btn {
+    display: block;
+    width: 100%;
+    background: none;
+    border: none;
+    border-top: 1px solid #1a1a1a;
+    padding: 11px 22px;
+    text-align: left;
+    font-size: 12px;
+    font-weight: 600;
+    color: #444;
+    cursor: pointer;
+    font-family: inherit;
+    letter-spacing: 0.3px;
+    transition: color 0.15s, background 0.15s;
+  }
+  .json-toggle-btn:hover { color: #888; background: #0a0a0a; }
+  .json-pre {
+    display: none;
+    margin: 0;
+    padding: 18px 22px;
+    background: #080808;
+    border-top: 1px solid #1a1a1a;
+    font-size: 12px;
+    color: #666;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+    line-height: 1.7;
+    font-family: 'SF Mono', 'Fira Code', monospace;
+  }
+
+  /* THINKING */
+  .thinking-card {
+    background: #111;
+    border: 1px solid #222;
+    border-radius: 16px;
+    padding: 18px 22px;
+    width: 100%;
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: #333; animation: pulse 1.2s infinite; }
   .dot:nth-child(2) { animation-delay: 0.2s; }
   .dot:nth-child(3) { animation-delay: 0.4s; }
-  @keyframes bounce { 0%, 60%, 100% { transform: translateY(0); } 30% { transform: translateY(-6px); background: #6366f1; } }
+  @keyframes pulse {
+    0%, 60%, 100% { background: #333; transform: scale(1); }
+    30% { background: #22c55e; transform: scale(1.3); }
+  }
 
-  .input-area { padding: 16px 28px 28px; border-top: 1px solid #2a2a2a; }
-  .input-row { display: flex; gap: 10px; max-width: 720px; margin: 0 auto; }
-  textarea { flex: 1; background: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 16px 18px; font-size: 17px; color: #f0f0f0; resize: none; outline: none; font-family: inherit; line-height: 1.5; transition: border-color 0.15s; min-height: 56px; max-height: 160px; }
-  textarea::placeholder { color: #555; }
-  textarea:focus { border-color: #6366f1; }
-  button#send { background: #6366f1; border: none; border-radius: 12px; width: 56px; height: 56px; cursor: pointer; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: background 0.15s; }
-  button#send:hover { background: #4f52d6; }
-  button#send:disabled { background: #2a2a2a; cursor: not-allowed; }
-  button#send svg { color: #fff; }
+  /* INPUT */
+  .input-area {
+    padding: 14px 20px 20px;
+    border-top: 1px solid #1a1a1a;
+    background: #0d0d0d;
+    flex-shrink: 0;
+  }
+  .input-row {
+    display: flex;
+    gap: 10px;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+  textarea {
+    flex: 1;
+    background: #111;
+    border: 1px solid #252525;
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 16px;
+    color: #e8e8e8;
+    resize: none;
+    outline: none;
+    font-family: inherit;
+    line-height: 1.5;
+    transition: border-color 0.15s;
+    min-height: 52px;
+    max-height: 160px;
+  }
+  textarea::placeholder { color: #3a3a3a; }
+  textarea:focus { border-color: #22c55e44; }
+  #send {
+    background: #16a34a;
+    border: none;
+    border-radius: 12px;
+    width: 52px;
+    height: 52px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+  #send:hover { background: #15803d; }
+  #send:disabled { background: #1a1a1a; cursor: not-allowed; }
+  #send svg { color: #fff; }
+
+  /* RESPONSIVE */
+  @media (max-width: 600px) {
+    header { padding: 14px 16px; }
+    .header-right { display: none; }
+    .messages { padding: 20px 12px; }
+    .welcome { padding: 24px 0; }
+    .welcome h1 { font-size: 24px; }
+    .input-area { padding: 10px 12px 16px; }
+    .user-bubble { max-width: 95%; font-size: 15px; }
+    .verdict-text { font-size: 17px; }
+    .explanation { font-size: 14px; }
+  }
 </style>
 </head>
 <body>
 
 <header>
-  <div class="logo">Ruley Prototype 2026</div>
-  <div class="tagline">The only pickleball rules API built for sportsbooks, fantasy sports & officiating tools</div>
+  <div class="logo">Ruley<span>.</span></div>
+  <div class="api-badge">Rules API</div>
+  <div class="header-right">2026 USAP rulebook — updated daily</div>
 </header>
 
 <div class="messages" id="messages">
   <div class="welcome" id="welcome">
-    <h2>Ask any pickleball question</h2>
-    <p style="font-size:16px;font-weight:700;color:#fff;margin-bottom:6px;">The only pickleball rules engine that pulls from all 5 official USAP sources and updates daily.</p>
-    <p style="font-size:16px;font-weight:700;color:#fff;margin-bottom:6px;">The only structured pickleball rules API built for apps where rule interpretation has financial stakes — sportsbooks, fantasy sports, and officiating tools.</p>
-    <p>Official rules, edge cases, referee calls — updated daily from the 2026 USAP rulebook.</p>
-    <p style="font-size:15px;color:#888;margin-top:10px;line-height:1.7;">Every day, a scheduled job pulls from five official sources: the <strong style="color:#ccc">2026 USAP Official Rulebook</strong>, the <strong style="color:#ccc">2026 Referee Casebook</strong>, the <strong style="color:#ccc">USAP New Rules Database</strong> (live), the <strong style="color:#ccc">Annual Change Document</strong>, and <strong style="color:#ccc">SportsEdTV Ask The Refs</strong> (real referee rulings on edge cases). Changes are parsed and stored automatically so answers always reflect the current rules — not a snapshot from months ago.</p>
+    <h1>The most accurate pickleball<br>rules engine available.</h1>
+    <p>Built for sportsbooks, fantasy sports, and officiating tools.<br>Every answer cites the exact rule. Every source updates daily.</p>
+    <div class="sources-row">
+      <span class="source-chip">2026 USAP Rulebook</span>
+      <span class="source-chip">Referee Casebook</span>
+      <span class="source-chip">New Rules Database</span>
+      <span class="source-chip">Annual Change Doc</span>
+      <span class="source-chip">SportsEdTV Ask The Refs</span>
+    </div>
+    <div class="examples-label">Try an example</div>
     <div class="examples">
-      <button class="example-btn" onclick="ask(this.textContent)">A ball lands in the kitchen and spins back over the net without being touched by the opponent. Can the player reach over the net to hit it, and where must they hit it?</button>
-      <button class="example-btn" onclick="ask(this.textContent)">What makes a paddle illegal under the 2026 USAP equipment standards?</button>
-      <button class="example-btn" onclick="ask(this.textContent)">Are there any 2026 rule changes that affect the two-bounce rule or how it is applied?</button>
-      <button class="example-btn" onclick="ask(this.textContent)">What changed in 2026 regarding the rules for calling lets or replays?</button>
+      <button class="example-btn" onclick="ask('A ball lands in the kitchen and spins back over the net without being touched. Can the player reach over to hit it?')">A ball lands in the kitchen and spins back over the net without being touched. Can the player reach over to hit it?</button>
+      <button class="example-btn" onclick="ask('What makes a paddle illegal under 2026 USAP equipment standards?')">What makes a paddle illegal under 2026 USAP equipment standards?</button>
+      <button class="example-btn" onclick="ask('What changed in 2026 regarding the rules for calling lets or replays?')">What changed in 2026 regarding the rules for calling lets or replays?</button>
+      <button class="example-btn" onclick="ask('Are there 2026 rule changes that affect the two-bounce rule?')">Are there 2026 rule changes that affect the two-bounce rule?</button>
     </div>
   </div>
 </div>
 
 <div class="input-area">
   <div class="input-row">
-    <textarea id="input" placeholder="Ask a pickleball question..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
+    <textarea id="input" placeholder="Ask any pickleball rules question..." rows="1" onkeydown="handleKey(event)" oninput="autoResize(this)"></textarea>
     <button id="send" onclick="send()">
-
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <line x1="22" y1="2" x2="11" y2="13"></line>
         <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
       </svg>
     </button>
-  </div>
-  <div style="max-width:720px;margin:12px auto 0;font-size:13px;color:#666;line-height:1.6;text-align:center;">
-    Answers are generated from the <strong style="color:#4a4a4a">2026 USAP Official Rulebook</strong>, the <strong style="color:#4a4a4a">Referee Casebook</strong>, the <strong style="color:#4a4a4a">USAP New Rules Database</strong>, and the <strong style="color:#4a4a4a">Annual Change Document</strong> — ingested daily. Powered by Gemini with Claude as fallback.
   </div>
 </div>
 
@@ -100,10 +423,7 @@
   }
 
   function handleKey(e) {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      send();
-    }
+    if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); }
   }
 
   function ask(text) {
@@ -111,61 +431,86 @@
     send();
   }
 
-  function addMessage(role, html) {
-    const wrap = document.getElementById('messages');
-    const welcome = document.getElementById('welcome');
-    if (welcome) welcome.remove();
+  function getMessages() { return document.getElementById('messages'); }
 
-    const div = document.createElement('div');
-    div.className = `message ${role}`;
-    div.innerHTML = `<div class="bubble">${html}</div>`;
-    wrap.appendChild(div);
+  function removeWelcome() {
+    const w = document.getElementById('welcome');
+    if (w) w.remove();
+  }
+
+  function addUserMessage(text) {
+    removeWelcome();
+    const wrap = getMessages();
+    const row = document.createElement('div');
+    row.className = 'msg-row user';
+    row.innerHTML = `<div class="user-bubble">${escapeHtml(text)}</div>`;
+    wrap.appendChild(row);
     wrap.scrollTop = wrap.scrollHeight;
-    return div;
   }
 
   function addThinking() {
-    const wrap = document.getElementById('messages');
-    const welcome = document.getElementById('welcome');
-    if (welcome) welcome.remove();
-
-    const div = document.createElement('div');
-    div.className = 'message assistant';
-    div.innerHTML = `<div class="thinking"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
-    wrap.appendChild(div);
+    removeWelcome();
+    const wrap = getMessages();
+    const row = document.createElement('div');
+    row.className = 'msg-row assistant';
+    row.innerHTML = `<div class="thinking-card"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
+    wrap.appendChild(row);
     wrap.scrollTop = wrap.scrollHeight;
-    return div;
+    return row;
   }
 
-  function formatAnswer(data) {
-    if (data.error) return `<em style="color:#f87171">${data.error}</em>`;
-    let html = '';
-    if (data.verdict) html += `<strong>${escapeHtml(data.verdict)}</strong><br><br>`;
-    if (data.explanation) html += escapeHtml(data.explanation).replace(/\n/g, '<br>');
-    if (data.edge_cases && data.edge_cases.length) {
-      html += `<br><br><strong>Edge cases:</strong><ul>` + data.edge_cases.map(e => `<li>${escapeHtml(e)}</li>`).join('') + `</ul>`;
+  function buildAnswerCard(data) {
+    if (data.error) {
+      return `<div class="answer-card"><div class="answer-body"><span style="color:#f87171;font-size:15px;">${escapeHtml(data.error)}</span></div></div>`;
     }
-    if (data.rule_number) html += `<br><span style="font-size:13px;color:#888">Rule: ${escapeHtml(data.rule_number)}</span>`;
-    if (data.source) html += `<span style="font-size:13px;color:#666"> — ${escapeHtml(data.source)}</span>`;
 
     const id = 'json-' + Math.random().toString(36).slice(2);
-    html += `<br><br><button onclick="
-      var el=document.getElementById('${id}');
-      var showing=el.style.display!=='none';
-      el.style.display=showing?'none':'block';
-      this.textContent=showing?'View raw JSON (API response)':'Hide raw JSON';
-    " style="margin-top:4px;background:#1a1a1a;border:1px solid #444;border-radius:8px;padding:10px 18px;font-size:15px;color:#ccc;cursor:pointer;font-family:inherit;">View raw JSON (API response)</button>
-    <pre id="${id}" style="display:none;margin-top:10px;background:#0a0a0a;border:1px solid #333;border-radius:10px;padding:20px;font-size:14px;color:#b0b0b0;overflow-x:auto;white-space:pre-wrap;word-break:break-word;line-height:1.6;">${escapeHtml(JSON.stringify(data, null, 2))}</pre>`;
+    const confClass = data.confidence ? `conf-${data.confidence}` : '';
 
-    if (!html) html = `<em style="color:#f87171">No answer returned. The engine may still be ingesting documents.</em>`;
-    return html;
+    let edgeHtml = '';
+    if (data.edge_cases && data.edge_cases.length) {
+      edgeHtml = `<div class="edge-cases">
+        <div class="edge-label">Edge cases</div>
+        <ul class="edge-list">${data.edge_cases.map(e => `<li>${escapeHtml(e)}</li>`).join('')}</ul>
+      </div>`;
+    }
+
+    return `<div class="answer-card">
+      <div class="answer-verdict">
+        <div class="verdict-label">Ruling</div>
+        <div class="verdict-text">${escapeHtml(data.verdict || '—')}</div>
+      </div>
+      <div class="answer-body">
+        <div class="explanation">${escapeHtml(data.explanation || '').replace(/\n/g, '<br>')}</div>
+        ${edgeHtml}
+      </div>
+      <div class="answer-meta">
+        ${data.rule_number ? `<span class="rule-badge">${escapeHtml(data.rule_number)}</span>` : ''}
+        ${data.confidence ? `<span class="conf-badge ${confClass}">${data.confidence}</span>` : ''}
+        ${data.source ? `<span class="source-meta">${escapeHtml(data.source)}${data.source_version ? ' ' + data.source_version : ''}</span>` : ''}
+      </div>
+      <button class="json-toggle-btn" onclick="
+        var el=document.getElementById('${id}');
+        var open=el.style.display!=='none';
+        el.style.display=open?'none':'block';
+        this.textContent=open?'View full API response →':'Hide API response ↑';
+      ">View full API response →</button>
+      <pre class="json-pre" id="${id}">${escapeHtml(JSON.stringify(data, null, 2))}</pre>
+    </div>`;
+  }
+
+  function addAnswer(data, thinkingRow) {
+    const wrap = getMessages();
+    thinkingRow.remove();
+    const row = document.createElement('div');
+    row.className = 'msg-row assistant';
+    row.innerHTML = buildAnswerCard(data);
+    wrap.appendChild(row);
+    wrap.scrollTop = wrap.scrollHeight;
   }
 
   function escapeHtml(str) {
-    return String(str)
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
   async function send() {
@@ -179,7 +524,7 @@
     input.value = '';
     input.style.height = 'auto';
 
-    addMessage('user', escapeHtml(question));
+    addUserMessage(question);
     const thinking = addThinking();
 
     try {
@@ -189,11 +534,14 @@
         body: JSON.stringify({ question })
       });
       const data = await res.json();
-      thinking.remove();
-      addMessage('assistant', formatAnswer(data));
+      addAnswer(data, thinking);
     } catch {
       thinking.remove();
-      addMessage('assistant', '<em style="color:#f87171">Could not reach the server. Try again.</em>');
+      const wrap = getMessages();
+      const row = document.createElement('div');
+      row.className = 'msg-row assistant';
+      row.innerHTML = `<div class="answer-card"><div class="answer-body"><span style="color:#f87171">Could not reach the server. Try again.</span></div></div>`;
+      wrap.appendChild(row);
     }
 
     busy = false;
