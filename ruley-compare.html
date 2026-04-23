@@ -286,12 +286,12 @@ function renderEngineAnswer(a) {
     ${a.rule_number ? `<div class="rule-tag">${a.rule_number}</div>` : ''}
     <div class="field"><div class="verdict">${a.verdict || '—'}</div></div>
     ${a.explanation ? `<div class="field"><div class="field-label">Explanation</div><div class="field-value">${a.explanation}</div></div>` : ''}
-    ${a.rule_text ? `<div class="field"><div class="field-label">Rule Text</div><div class="field-value" style="color:#aaa;">${a.rule_text}</div></div>` : ''}
-    ${a.edge_cases?.length ? `<div class="field"><div class="field-label">Edge Cases</div><ul class="edge-list">${a.edge_cases.map(e=>`<li>${e}</li>`).join('')}</ul></div>` : ''}
-    ${a.notes ? `<div class="field"><div class="field-label">Referee Notes</div><div class="field-value" style="color:#aaa;">${a.notes}</div></div>` : ''}
     ${a.confidence ? `<div class="field"><div class="field-label">Confidence</div><span class="conf-${a.confidence}">${a.confidence}</span></div>` : ''}
     ${a.source ? `<div class="field"><div class="field-label">Source</div><div class="field-value" style="color:#666;">${a.source}${a.source_version?' ('+a.source_version+')':''}</div></div>` : ''}
     <div class="model-tag">Model: ${a.model_used || 'unknown'}</div>
+    <div style="margin-top:12px;padding:10px 12px;background:#1e1e1e;border:1px solid #2a2a2a;border-radius:6px;font-size:11px;color:#666;line-height:1.5;">
+      API customers receive the full JSON response including rule text, edge cases, referee casebook notes, related rules, and confidence level. Each app chooses what to display.
+    </div>
   `;
 }
 

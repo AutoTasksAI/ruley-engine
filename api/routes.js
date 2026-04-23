@@ -49,4 +49,19 @@ router.post('/ingest', async (req, res) => {
   runNow().catch((err) => console.error('Manual ingestion error:', err));
 });
 
+router.post('/seed', (req, res) => {
+  const { source, url, content, hash, version } = req.body;
+  if (!source || !url || !content || !hash) {
+    return res.status(400).json({ error: 'source, url, content, and hash are required' });
+  }
+  try {
+    const { upsertDocument } = require('../ingestion/storage');
+    upsertDocument({ source, url, content, hash, version: version || null });
+    res.json({ status: 'ok', source });
+  } catch (err) {
+    console.error('Seed error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
 module.exports = router;
