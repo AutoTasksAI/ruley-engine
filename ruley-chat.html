@@ -492,10 +492,10 @@
       </div>
       <button class="json-toggle-btn" onclick="
         var el=document.getElementById('${id}');
-        var open=el.style.display!=='none';
+        var open=el.style.display==='block';
         el.style.display=open?'none':'block';
-        this.textContent=open?'View full API response →':'Hide API response ↑';
-      ">View full API response →</button>
+        this.textContent=open?'View full JSON response — this is what your app receives from the API ↓':'Hide API response ↑';
+      ">View full JSON response — this is what your app receives from the API ↓</button>
       <pre class="json-pre" id="${id}">${escapeHtml(JSON.stringify(data, null, 2))}</pre>
     </div>`;
   }
