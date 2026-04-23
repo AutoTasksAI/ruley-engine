@@ -261,6 +261,24 @@
   }
 
   /* JSON TOGGLE */
+  .new-question-btn {
+    display: block;
+    width: 100%;
+    background: #161616;
+    border: 1px solid #333;
+    border-radius: 12px;
+    padding: 14px 20px;
+    font-size: 15px;
+    font-weight: 600;
+    color: #ddd;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: center;
+    transition: all 0.15s;
+    margin-top: 4px;
+  }
+  .new-question-btn:hover { background: #1e1e1e; color: #fff; border-color: #444; }
+
   .json-toggle-btn {
     display: block;
     width: 100%;
@@ -377,7 +395,7 @@
 <body>
 
 <header>
-  <div class="logo">Ruley<span>.</span></div>
+  <div class="logo" onclick="resetToWelcome()" style="cursor:pointer;" title="Back to home">Ruley<span>.</span></div>
   <div class="api-badge">Prototype — Accuracy Improvement</div>
   <div class="header-right">2026 USAP rulebook — updated daily</div>
 </header>
@@ -439,6 +457,29 @@
     if (w) w.remove();
   }
 
+  function resetToWelcome() {
+    const wrap = getMessages();
+    wrap.innerHTML = `<div class="welcome" id="welcome">
+      <h1>The most accurate pickleball<br>rules engine available.</h1>
+      <p>Built for sportsbooks, fantasy sports, and officiating tools.<br>Every answer cites the exact rule. Every source updates daily.</p>
+      <div class="sources-row">
+        <span class="source-chip">2026 USAP Rulebook</span>
+        <span class="source-chip">Referee Casebook</span>
+        <span class="source-chip">New Rules Database</span>
+        <span class="source-chip">Annual Change Doc</span>
+        <span class="source-chip">SportsEdTV Ask The Refs</span>
+      </div>
+      <div class="examples-label">Try an example</div>
+      <div class="examples">
+        <button class="example-btn" onclick="ask('A ball lands in the kitchen and spins back over the net without being touched. Can the player reach over to hit it?')">A ball lands in the kitchen and spins back over the net without being touched. Can the player reach over to hit it?</button>
+        <button class="example-btn" onclick="ask('What makes a paddle illegal under 2026 USAP equipment standards?')">What makes a paddle illegal under 2026 USAP equipment standards?</button>
+        <button class="example-btn" onclick="ask('What changed in 2026 regarding the rules for calling lets or replays?')">What changed in 2026 regarding the rules for calling lets or replays?</button>
+        <button class="example-btn" onclick="ask('Are there 2026 rule changes that affect the two-bounce rule?')">Are there 2026 rule changes that affect the two-bounce rule?</button>
+      </div>
+    </div>`;
+    document.getElementById('input').focus();
+  }
+
   function addUserMessage(text) {
     removeWelcome();
     const wrap = getMessages();
@@ -497,7 +538,8 @@
         this.textContent=open?'View full JSON response — this is what your app receives from the API ↓':'Hide API response ↑';
       ">View full JSON response — this is what your app receives from the API ↓</button>
       <pre class="json-pre" id="${id}">${escapeHtml(JSON.stringify(data, null, 2))}</pre>
-    </div>`;
+    </div>
+    <button class="new-question-btn" onclick="resetToWelcome()">← Ask another question</button>`;
   }
 
   function addAnswer(data, thinkingRow) {
