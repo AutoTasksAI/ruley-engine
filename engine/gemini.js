@@ -38,7 +38,7 @@ async function queryGemini(systemPrompt, question) {
         generationConfig: {
           responseMimeType: 'application/json',
           temperature: 0.1,
-          maxOutputTokens: 2048,
+          maxOutputTokens: 8192,
         },
       });
 
